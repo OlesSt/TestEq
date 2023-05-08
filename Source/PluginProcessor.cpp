@@ -101,8 +101,8 @@ void TestEqAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock
     spec.numChannels = 1;
     spec.sampleRate = sampleRate;
     
-    leftChannel.prepare(spec);
-    rightChannel.prepare(spec);
+    leftChain.prepare(spec);
+    rightChain.prepare(spec);
 }
 
 void TestEqAudioProcessor::releaseResources()

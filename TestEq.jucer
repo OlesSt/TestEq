@@ -2,7 +2,7 @@
 
 <JUCERPROJECT id="mmZGfx" name="TestEq" projectType="audioplug" useAppConfig="0"
               addUsingNamespaceToJuceHeader="0" displaySplashScreen="1" jucerFormatVersion="1"
-              pluginFormats="buildStandalone">
+              pluginFormats="buildStandalone,buildVST3">
   <MAINGROUP id="eJ7SfH" name="TestEq">
     <GROUP id="{024D1044-60E3-572D-F33B-EE0DC09F9A61}" name="Source">
       <FILE id="Buh9pE" name="PluginProcessor.cpp" compile="1" resource="0"
