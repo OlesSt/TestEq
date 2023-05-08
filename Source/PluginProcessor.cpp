@@ -104,18 +104,8 @@ void TestEqAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock
     leftChain.prepare(spec);
     rightChain.prepare(spec);
     
-    auto chainSettings = getChainSetting(apvts);
+    updateFilters();
     
-    updatePeakFilter(chainSettings);
-    
-    auto cutCoeffisients = juce::dsp::FilterDesign<float>::designIIRHighpassHighOrderButterworthMethod(chainSettings.lowCutFreq,
-                                                                                                      sampleRate,
-                                                                                                      2 * (chainSettings.lowCutScope + 1));
-    auto& leftLowCut = leftChain.get<ChainPositions::LowCut>();
-    updateCutFilter(leftLowCut, cutCoeffisients, chainSettings.lowCutScope);
-    
-    auto& rightLowCut = rightChain.get<ChainPositions::LowCut>();
-    updateCutFilter(rightLowCut, cutCoeffisients, chainSettings.lowCutScope);
 }
 
 void TestEqAudioProcessor::releaseResources()
@@ -165,21 +155,7 @@ void TestEqAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce:
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
     
-    auto chainSettings = getChainSetting(apvts);
-    
-    updatePeakFilter(chainSettings);
-    
-    
-    auto cutCoefficients = juce::dsp::FilterDesign<float>::designIIRHighpassHighOrderButterworthMethod(chainSettings.lowCutFreq,
-                                                                                                      getSampleRate(),
-                                                                                                      2 * (chainSettings.lowCutScope + 1));
-    auto& leftLowCut = leftChain.get<ChainPositions::LowCut>();
-    
-    updateCutFilter(leftLowCut, cutCoefficients, chainSettings.lowCutScope);
-    
-    auto& rightLowCut = rightChain.get<ChainPositions::LowCut>();
-    
-    updateCutFilter(rightLowCut, cutCoefficients, chainSettings.lowCutScope);
+    updateFilters();
 
     juce::dsp::AudioBlock<float>block(buffer);
     
@@ -245,6 +221,38 @@ void TestEqAudioProcessor::updatePeakFilter(const ChainSettings& chainSettings)
 void TestEqAudioProcessor::updateCoefficients(Coefficients& old, const Coefficients& replacements)
 {
     *old = *replacements;
+    
+}
+
+void TestEqAudioProcessor::updateLowCutFilters(const ChainSettings& chainSetting)
+{
+    auto cutCoefficients = juce::dsp::FilterDesign<float>::designIIRHighpassHighOrderButterworthMethod(chainSetting.lowCutFreq,
+                                                                                                      getSampleRate(),
+                                                                                                      2 * (chainSetting.lowCutScope + 1));
+    auto& leftLowCut = leftChain.get<ChainPositions::LowCut>();
+    auto& rightLowCut = rightChain.get<ChainPositions::LowCut>();
+    updateCutFilter(leftLowCut, cutCoefficients, chainSetting.lowCutScope);
+    updateCutFilter(rightLowCut, cutCoefficients, chainSetting.lowCutScope);
+}
+void TestEqAudioProcessor::updateHighCutFilters(const ChainSettings& chainSetting)
+{
+    auto highCutCoeffisients = juce::dsp::FilterDesign<float>::designIIRLowpassHighOrderButterworthMethod(chainSetting.highCutFreq,
+                                                                                                          getSampleRate(),
+                                                                                                          2 * (chainSetting.highCutScope + 1));
+    auto& leftHighCut = leftChain.get<ChainPositions::HighCut>();
+    auto& rightHighCut = rightChain.get<ChainPositions::HighCut>();
+    
+    updateCutFilter(leftHighCut, highCutCoeffisients, chainSetting.highCutScope);
+    updateCutFilter(rightHighCut, highCutCoeffisients, chainSetting.highCutScope);
+}
+
+void TestEqAudioProcessor::updateFilters()
+{
+    auto chainSettings = getChainSetting(apvts);
+    
+    updateLowCutFilters(chainSettings);
+    updatePeakFilter(chainSettings);
+    updateHighCutFilters(chainSettings);
     
 }
 
