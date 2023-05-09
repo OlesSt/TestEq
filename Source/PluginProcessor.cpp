@@ -233,7 +233,7 @@ void TestEqAudioProcessor::updatePeakFilter(const ChainSettings& chainSettings)
     updateCoefficients(leftChain.get<ChainPositions::Peak>().coefficients, peakCoefficients);
     updateCoefficients(rightChain.get<ChainPositions::Peak>().coefficients, peakCoefficients);
 }
-void TestEqAudioProcessor::updateCoefficients(Coefficients& old, const Coefficients& replacements)
+void updateCoefficients(Coefficients& old, const Coefficients& replacements)
 {
     *old = *replacements;
     
@@ -241,19 +241,18 @@ void TestEqAudioProcessor::updateCoefficients(Coefficients& old, const Coefficie
 
 void TestEqAudioProcessor::updateLowCutFilters(const ChainSettings& chainSetting)
 {
-    auto cutCoefficients = juce::dsp::FilterDesign<float>::designIIRHighpassHighOrderButterworthMethod(chainSetting.lowCutFreq,
-                                                                                                      getSampleRate(),
-                                                                                                      2 * (chainSetting.lowCutScope + 1));
+    auto cutCoefficients = makeLowCutFilter(chainSetting, getSampleRate());
+    
     auto& leftLowCut = leftChain.get<ChainPositions::LowCut>();
     auto& rightLowCut = rightChain.get<ChainPositions::LowCut>();
+    
     updateCutFilter(leftLowCut, cutCoefficients, chainSetting.lowCutScope);
     updateCutFilter(rightLowCut, cutCoefficients, chainSetting.lowCutScope);
 }
 void TestEqAudioProcessor::updateHighCutFilters(const ChainSettings& chainSetting)
 {
-    auto highCutCoeffisients = juce::dsp::FilterDesign<float>::designIIRLowpassHighOrderButterworthMethod(chainSetting.highCutFreq,
-                                                                                                          getSampleRate(),
-                                                                                                          2 * (chainSetting.highCutScope + 1));
+    auto highCutCoeffisients = makeHighCutFilter(chainSetting, getSampleRate());
+    
     auto& leftHighCut = leftChain.get<ChainPositions::HighCut>();
     auto& rightHighCut = rightChain.get<ChainPositions::HighCut>();
     

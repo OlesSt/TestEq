@@ -28,11 +28,24 @@ TestEqAudioProcessorEditor::TestEqAudioProcessorEditor (TestEqAudioProcessor& p)
         addAndMakeVisible(comp);
     }
     
+    const auto& params = audioProcessor.getParameters();
+    for (auto param: params)
+    {
+        param->addListener(this);
+    }
+    
+    startTimerHz(60);
+    
     setSize (600, 400);
 }
 
 TestEqAudioProcessorEditor::~TestEqAudioProcessorEditor()
 {
+    const auto& params = audioProcessor.getParameters();
+    for (auto param: params)
+    {
+        param->removeListener(this);
+    }
 }
 
 //==============================================================================
@@ -141,7 +154,11 @@ void TestEqAudioProcessorEditor::timerCallback()
 {
     if ( parameterChanged.compareAndSetBool(false, true))
     {
+        auto chainSettings = getChainSetting(audioProcessor.apvts);
+        auto peakCoefficients = makePeakFilter(chainSettings, audioProcessor.getSampleRate());
+        updateCoefficients(monoChain.get<ChainPositions::Peak>().coefficients, peakCoefficients);
         
+        repaint();
     }
 }
 
