@@ -199,6 +199,7 @@ void TestEqAudioProcessor::setStateInformation (const void* data, int sizeInByte
     {
         apvts.replaceState(tree);
         updateFilters();
+        
     }
 }
 
