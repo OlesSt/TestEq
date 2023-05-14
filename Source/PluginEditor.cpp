@@ -77,11 +77,6 @@ void RotarySliderWithLabels::paint(juce::Graphics& g)
     
     auto sliderBounds = getSliderBounds();
     
-//    g.setColour(Colours::red);
-//    g.drawRect(getLocalBounds());
-//    g.setColour(Colours::yellow);
-//    g.drawRect(sliderBounds);
-    
     getLookAndFeel().drawRotarySlider(g,
                                       sliderBounds.getX(),
                                       sliderBounds.getY(),
@@ -225,7 +220,7 @@ void ResponseCurveComponent :: paint (juce::Graphics& g)
     
     g.drawImage(background, getLocalBounds().toFloat());
 
-    auto responseArea = getAnalysisAre();  //getRenderArea();   //getLocalBounds();
+    auto responseArea = getAnalysisAre();
     
     auto w = responseArea.getWidth();
     
@@ -321,13 +316,9 @@ void ResponseCurveComponent::resized()
     }
     
     g.setColour(Colours::dimgrey);
-    //for (auto f : freq)
     for (auto x : xs)
     {
-//        auto normX = mapFromLog10(f, 20.f, 20000.f);
-//        g.drawVerticalLine(getWidth() * normX, 0.f, getHeight());
         g.drawVerticalLine(x, top, bottom);
-        
     }
     
     Array<float> gain
@@ -343,7 +334,6 @@ void ResponseCurveComponent::resized()
 //        g.drawHorizontalLine(y, 0, getWidth());
     }
     
-//    g.drawRect(getAnalysisAre());
     g.setColour(Colours::lightgrey);
     const int fontHeight = 10;
     g.setFont(fontHeight);
@@ -391,6 +381,15 @@ void ResponseCurveComponent::resized()
         r.setCentre(r.getCentreX(), y);
         
         g.setColour(gDb == 0 ? Colour(0u, 172u, 1u): Colours::lightgrey);
+        g.drawFittedText(str, r, juce::Justification::centred, 1);
+        
+        str.clear();
+        str << (gDb - 24.f);
+        
+        r.setX(1);
+        textWidth = g.getCurrentFont().getStringWidth(str);
+        r.setSize(textWidth, fontHeight);
+        g.setColour(Colours::lightgrey);
         g.drawFittedText(str, r, juce::Justification::centred, 1);
     }
 }
