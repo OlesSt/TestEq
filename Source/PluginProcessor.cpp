@@ -232,6 +232,11 @@ ChainSettings getChainSetting(juce::AudioProcessorValueTreeState& apvts)
     settings.lowCutScope = static_cast<Slope>(apvts.getRawParameterValue("LowCut Slope")->load());
     settings.highCutScope = static_cast<Slope>(apvts.getRawParameterValue("High Slope")->load());
     
+    settings.lowCutBypassed = apvts.getRawParameterValue("LowCut Bypassed") -> load() > 0.5f;
+    settings.peakBypassed = apvts.getRawParameterValue("Peak Bypassed") -> load() > 0.5f;
+    settings.highCutBypassed = apvts.getRawParameterValue("HighCut Bypassed") -> load() > 0.5f;
+
+    
     return settings;
 }
 
@@ -259,9 +264,11 @@ void updateCoefficients(Coefficients& old, const Coefficients& replacements)
 void TestEqAudioProcessor::updateLowCutFilters(const ChainSettings& chainSetting)
 {
     auto cutCoefficients = makeLowCutFilter(chainSetting, getSampleRate());
-    
     auto& leftLowCut = leftChain.get<ChainPositions::LowCut>();
     auto& rightLowCut = rightChain.get<ChainPositions::LowCut>();
+    
+    leftChain.setBypassed<ChainPositions::LowCut>(chainSetting.lowCutBypassed);
+    rightChain.setBypassed<ChainPositions::LowCut>(chainSetting.lowCutBypassed);
     
     updateCutFilter(leftLowCut, cutCoefficients, chainSetting.lowCutScope);
     updateCutFilter(rightLowCut, cutCoefficients, chainSetting.lowCutScope);
@@ -269,9 +276,11 @@ void TestEqAudioProcessor::updateLowCutFilters(const ChainSettings& chainSetting
 void TestEqAudioProcessor::updateHighCutFilters(const ChainSettings& chainSetting)
 {
     auto highCutCoeffisients = makeHighCutFilter(chainSetting, getSampleRate());
-    
     auto& leftHighCut = leftChain.get<ChainPositions::HighCut>();
     auto& rightHighCut = rightChain.get<ChainPositions::HighCut>();
+    
+    leftChain.setBypassed<ChainPositions::HighCut>(chainSetting.highCutBypassed);
+    rightChain.setBypassed<ChainPositions::HighCut>(chainSetting.highCutBypassed);
     
     updateCutFilter(leftHighCut, highCutCoeffisients, chainSetting.highCutScope);
     updateCutFilter(rightHighCut, highCutCoeffisients, chainSetting.highCutScope);
@@ -280,6 +289,9 @@ void TestEqAudioProcessor::updateHighCutFilters(const ChainSettings& chainSettin
 void TestEqAudioProcessor::updateFilters()
 {
     auto chainSettings = getChainSetting(apvts);
+    
+    leftChain.setBypassed<ChainPositions::Peak>(chainSettings.peakBypassed);
+    rightChain.setBypassed<ChainPositions::Peak>(chainSettings.peakBypassed);
     
     updateLowCutFilters(chainSettings);
     updatePeakFilter(chainSettings);
@@ -318,6 +330,10 @@ juce::AudioProcessorValueTreeState::ParameterLayout TestEqAudioProcessor::create
                                                             stringArray, 0));
     layout.add(std::make_unique<juce::AudioParameterChoice>("High Slope", "High Slope",
                                                             stringArray, 0));
+    layout.add(std::make_unique<juce::AudioParameterBool>("LowCut Bypassed", "LowCut Bypassed", false));
+    layout.add(std::make_unique<juce::AudioParameterBool>("Peak Bypassed", "Peak Bypassed", false));
+    layout.add(std::make_unique<juce::AudioParameterBool>("HighCut Bypassed", "HighCut Bypassed", false));
+    layout.add(std::make_unique<juce::AudioParameterBool>("Analyzer Enabled", "Analyzer Enabled", true));
     
     return layout;
 }
